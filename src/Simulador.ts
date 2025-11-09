@@ -34,4 +34,33 @@ export class Simulator {
         } while (this.nodes.has(id));
         return id;
     }
+
+    // Elimina un nodo del simulador
+    removeNode(nodeId: number): boolean {
+        const node = this.nodes.get(nodeId);
+        if (!node) {
+            return false;
+        }
+
+        // Notificar al predecesor y sucesor para actualizar sus referencias
+        const predecessor = node.predecessor;
+        const successor = node.successor;
+
+        if (predecessor && predecessor !== node) {
+            predecessor.successor = successor;
+        }
+        if (successor && successor !== node) {
+            successor.predecessor = predecessor;
+        }
+
+        // Transferir datos al sucesor antes de eliminar
+        for (const [key, value] of node.data) {
+            successor.data.set(key, value);
+        }
+
+        // Remover el nodo del mapa
+        this.nodes.delete(nodeId);
+        console.log(`[Simulator] Nodo ${nodeId} eliminado`);
+        return true;
+    }
 }

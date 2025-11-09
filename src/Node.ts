@@ -148,4 +148,16 @@ export class Node {
     // El nuevo valor para este dedo es el sucesor de 'fingerId'
     this.fingerTable[i] = this.findSuccessor(fingerId);
   }
+
+  /**
+   * Método para obtener información del nodo en formato JSON
+   */
+  public toJSON() {
+    return {
+      id: this.id,
+      successor: this.successor.id,
+      predecessor: this.predecessor?.id ?? null,
+      dataCount: this.data.size
+    };
+  }
 }
