@@ -2,11 +2,14 @@
   "name": "chord-simulacion",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "api": "tsc && node dist/api/server.js",
+    "dev-api": "ts-node src/api/server.ts",
+    "frontend": "cd src/frontend && parcel index.html",
+    "build-frontend": "cd src/frontend && parcel build index.html"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +17,21 @@
   "packageManager": "pnpm@10.19.0",
   "devDependencies": {
     "@types/node": "^24.10.0",
+    "parcel": "^2.16.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "@types/cors": "^2.8.19",
+    "@types/d3": "^7.4.3",
+    "@types/express": "^5.0.5",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "cors": "^2.8.5",
+    "d3": "^7.9.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }
