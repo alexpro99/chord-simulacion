@@ -1,8 +1,4 @@
-// src/Node.ts
-
 import { Simulator } from "./Simulador";
-
-// Para poder tener una referencia al simulador y encontrar otros nodos
 
 export class Node {
   public readonly id: number;
@@ -15,7 +11,6 @@ export class Node {
   public fingerTable: Node[];
   public predecessor: Node | null = null;
 
-  // Referencia al simulador para "enviar mensajes" (llamar métodos)
   private simulator: Simulator;
 
   constructor(id: number, m: number, simulator: Simulator) {
@@ -38,7 +33,6 @@ export class Node {
 
   // Función auxiliar para comprobar si un id está en el rango (start, end] en un círculo
   private isInRange(id: number, start: number, end: number): boolean {
-    const space = this.simulator.identifierSpaceSize;
     if (start < end) {
       return id > start && id <= end;
     } else {
@@ -59,8 +53,7 @@ export class Node {
           " -> "
         )}]`
       );
-      // En una simulación, podemos lanzar un error para detener todo.
-      // En un sistema real, podrías devolver un error o un estado de fallo.
+
       throw new Error(
         `Bucle infinito detectado en el nodo ${this.id} para la clave ${id}`
       );

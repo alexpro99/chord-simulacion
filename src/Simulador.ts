@@ -1,4 +1,3 @@
-// src/Simulator.ts
 import { Node } from './Node';
 
 export class Simulator {
