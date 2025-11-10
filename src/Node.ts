@@ -46,10 +46,9 @@ export class Node {
    * Esta es la operación de búsqueda principal de Chord.
    */
   public findSuccessor(id: number, path: number[] = []): Node {
-    const currentPath = [...path, this.id];
     if (path.includes(this.id)) {
       console.log(
-        `¡ERROR! Bucle infinito detectado en la búsqueda de ${id}. Ruta: [${currentPath.join(
+        `¡ERROR! Bucle infinito detectado en la búsqueda de ${id}. Ruta: [${path.join(
           " -> "
         )}]`
       );
@@ -58,6 +57,8 @@ export class Node {
         `Bucle infinito detectado en el nodo ${this.id} para la clave ${id}`
       );
     }
+
+    path.push(this.id);
 
     // Caso base: si el id está entre este nodo y su sucesor, el sucesor es la respuesta
     if (this.isInRange(id, this.id, this.successor.id)) {
@@ -72,7 +73,7 @@ export class Node {
     console.log(
       `[Nodo ${this.id}] Lookup para ${id}: saltando a ${closestPrecedingNode.id}`
     );
-    return closestPrecedingNode.findSuccessor(id, currentPath);
+    return closestPrecedingNode.findSuccessor(id, path);
   }
 
   /**
@@ -157,7 +158,7 @@ export class Node {
       id: this.id,
       successor: this.successor.id,
       predecessor: this.predecessor?.id ?? null,
-      dataCount: this.data.size
+      dataCount: this.data.size,
     };
   }
 }
