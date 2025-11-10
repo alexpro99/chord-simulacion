@@ -43,8 +43,9 @@ class ApiClient {
         });
     }
 
-    async findData(key: string): Promise<FindDataResponse> {
-        return this.request<FindDataResponse>(`/data/${encodeURIComponent(key)}`);
+    async findData(key: string, nodeId?: number): Promise<FindDataResponse> {
+        const url = nodeId ? `/data/${encodeURIComponent(key)}?nodeId=${nodeId}` : `/data/${encodeURIComponent(key)}`;
+        return this.request<FindDataResponse>(url);
     }
 }
 

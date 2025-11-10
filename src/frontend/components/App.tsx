@@ -13,6 +13,7 @@ const App: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [searchPath, setSearchPath] = useState<number[]>([]);
 
     // Cargar estado inicial del anillo
     const loadRingStatus = async () => {
@@ -91,8 +92,10 @@ const App: React.FC = () => {
 
     const handleFindData = async (key: string) => {
         setLoading(true);
+        setSearchPath([]); // Limpiar camino anterior
         try {
-            const result = await apiClient.findData(key);
+            const result = await apiClient.findData(key, selectedNode?.id);
+            setSearchPath(result.caminoDeBusqueda);
             showMessage(`Dato encontrado en nodo ${result.foundInNode}`, 'success');
         } catch (err) {
             if (err instanceof Error && err.message.includes('404')) {
@@ -137,6 +140,7 @@ const App: React.FC = () => {
                         ringStatus={ringStatus}
                         selectedNode={selectedNode}
                         onNodeSelect={setSelectedNode}
+                        searchPath={searchPath}
                     />
                 </main>
 

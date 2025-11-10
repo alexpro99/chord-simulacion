@@ -6,12 +6,14 @@ interface RingVisualizationProps {
     ringStatus: RingStatus | null;
     selectedNode: Node | null;
     onNodeSelect: (node: Node) => void;
+    searchPath?: number[];
 }
 
 const RingVisualization: React.FC<RingVisualizationProps> = ({
     ringStatus,
     selectedNode,
-    onNodeSelect
+    onNodeSelect,
+    searchPath = []
 }) => {
     const svgRef = useRef<SVGSVGElement>(null);
 
@@ -82,14 +84,29 @@ const RingVisualization: React.FC<RingVisualizationProps> = ({
                 const endX = centerX + (radius - 20) * Math.cos(endAngle);
                 const endY = centerY + (radius - 20) * Math.sin(endAngle);
 
-                svg.append('line')
+                // Verificar si esta conexión está en el camino de búsqueda
+                const isInSearchPath = searchPath.length > 1 && searchPath.includes(node.id) && searchPath.includes(successor.id) &&
+                    Math.abs(searchPath.indexOf(node.id) - searchPath.indexOf(successor.id)) === 1;
+
+                const line = svg.append('line')
                    .attr('x1', startX)
                    .attr('y1', startY)
                    .attr('x2', endX)
                    .attr('y2', endY)
-                   .attr('stroke', '#007bff')
-                   .attr('stroke-width', 2)
-                   .attr('opacity', 0.6);
+                   .attr('stroke', isInSearchPath ? '#ff6b35' : '#007bff')
+                   .attr('stroke-width', isInSearchPath ? 4 : 2)
+                   .attr('opacity', isInSearchPath ? 1 : 0.6)
+                   .attr('class', isInSearchPath ? 'search-path-line' : '');
+
+                // Animación para líneas del camino de búsqueda
+                if (isInSearchPath) {
+                    line.transition()
+                        .duration(1000)
+                        .attr('stroke-width', 6)
+                        .transition()
+                        .duration(500)
+                        .attr('stroke-width', 4);
+                }
             }
         });
 
@@ -102,17 +119,31 @@ const RingVisualization: React.FC<RingVisualizationProps> = ({
             .style('cursor', 'pointer');
 
         // Círculos de nodos
-        nodeGroups.append('circle')
+        const circles = nodeGroups.append('circle')
             .attr('cx', d => centerX + radius * Math.cos(d.id * angleStep - Math.PI / 2))
             .attr('cy', d => centerY + radius * Math.sin(d.id * angleStep - Math.PI / 2))
-            .attr('r', d => selectedNode && d.id === selectedNode.id ? 15 : 12)
+            .attr('r', d => {
+                if (selectedNode && d.id === selectedNode.id) return 15;
+                if (searchPath.includes(d.id)) return 14;
+                return 12;
+            })
             .attr('fill', d => {
                 if (selectedNode && d.id === selectedNode.id) return '#ff6b6b';
+                if (searchPath.includes(d.id)) return '#ff6b35';
                 if (d.dataCount > 0) return '#4ecdc4';
                 return '#45b7d1';
             })
             .attr('stroke', '#fff')
             .attr('stroke-width', 2);
+
+        // Animación para nodos en el camino de búsqueda
+        circles.filter(d => searchPath.includes(d.id))
+            .transition()
+            .duration(800)
+            .attr('r', 16)
+            .transition()
+            .duration(400)
+            .attr('r', 14);
 
         // Etiquetas de nodos
         nodeGroups.append('text')
@@ -188,7 +219,7 @@ const RingVisualization: React.FC<RingVisualizationProps> = ({
             .attr('font-size', '12px')
             .text('Nodo seleccionado');
 
-    }, [ringStatus, selectedNode, onNodeSelect]);
+    }, [ringStatus, selectedNode, onNodeSelect, searchPath]);
 
     if (!ringStatus) {
         return (

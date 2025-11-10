@@ -44,4 +44,5 @@ export interface FindDataResponse {
     keyId: number;
     value: string;
     foundInNode: number;
+    caminoDeBusqueda: number[];
 }

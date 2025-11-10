@@ -53,7 +53,7 @@ const NodeInfo: React.FC<NodeInfoProps> = ({ node, onClose }) => {
                 </div>
             </div>
 
-            <div className="panel-section">
+            {/* <div className="panel-section">
                 <div className="node-position">
                     <h4>Posición en el Anillo</h4>
                     <div className="ring-position">
@@ -71,7 +71,7 @@ const NodeInfo: React.FC<NodeInfoProps> = ({ node, onClose }) => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div className="panel-section">
                 <div className="node-explanation">
