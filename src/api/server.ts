@@ -1,8 +1,8 @@
-import express from 'express';
-import cors from 'cors';
-import { Simulator } from '../Simulador';
-import { Node } from '../Node';
-import { config } from 'dotenv';
+import express from "express";
+import cors from "cors";
+import { Simulator } from "../Simulador";
+import { Node } from "../Node";
+import { config } from "dotenv";
 
 config();
 
@@ -10,10 +10,16 @@ const app = express();
 const PORT = 3000;
 
 // Middleware CORS
-app.use(cors({
-    origin: ['http://localhost:1234', 'http://localhost:3000', 'http://localhost:50802'],
-    credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:1234",
+      "http://localhost:3000",
+      "http://localhost:50802",
+    ],
+    credentials: true,
+  })
+);
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -44,7 +50,7 @@ function initializeNodes() {
   }
 
   // Estabilización inicial
-  console.log('Ejecutando estabilización inicial...');
+  console.log("Ejecutando estabilización inicial...");
   for (let i = 0; i < 10; i++) {
     const allNodes = simulator.getAllNodes();
     for (const node of allNodes) {
@@ -53,7 +59,7 @@ function initializeNodes() {
     }
   }
 
-  console.log('Simulador inicializado con', nodes.length, 'nodos');
+  console.log("Simulador inicializado con", nodes.length, "nodos");
 }
 
 // Inicializar nodos al iniciar el servidor
@@ -67,31 +73,34 @@ setInterval(() => {
       node.stabilize();
       node.fixFingers();
     } catch (error) {
-      console.log(error)      
+      console.log(error);
     }
   }
 }, 10000);
 
 // Función hash simple para claves
 function hashKey(key: string): number {
-  return key.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % simulator.identifierSpaceSize;
+  return (
+    key.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+    simulator.identifierSpaceSize
+  );
 }
 
 // Endpoints
 
 // GET /status - Estado general del anillo
-app.get('/status', (req, res) => {
+app.get("/status", (req, res) => {
   const allNodes = simulator.getAllNodes();
   res.json({
     m: M,
     identifierSpaceSize: simulator.identifierSpaceSize,
     nodeCount: allNodes.length,
-    nodes: allNodes.map(node => node.toJSON())
+    nodes: allNodes.map((node) => node.toJSON()),
   });
 });
 
 // POST /nodes - Agregar un nuevo nodo
-app.post('/nodes', (req, res) => {
+app.post("/nodes", (req, res) => {
   try {
     const nodeId = simulator.getRandomNodeId();
     const newNode = new Node(nodeId, M, simulator);
@@ -109,25 +118,25 @@ app.post('/nodes', (req, res) => {
     res.json({
       success: true,
       node: newNode.toJSON(),
-      message: `Nodo ${nodeId} agregado al anillo`
+      message: `Nodo ${nodeId} agregado al anillo`,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al agregar nodo'
+      error: "Error al agregar nodo",
     });
   }
 });
 
 // DELETE /nodes/:id - Eliminar un nodo
-app.delete('/nodes/:id', (req, res) => {
+app.delete("/nodes/:id", (req, res) => {
   try {
     const nodeId = parseInt(req.params.id);
     const success = simulator.removeNode(nodeId);
 
     if (success) {
       // Remover de la lista local
-      nodes = nodes.filter(node => node.id !== nodeId);
+      nodes = nodes.filter((node) => node.id !== nodeId);
 
       // Actualizar firstNode si es necesario
       if (firstNode && firstNode.id === nodeId) {
@@ -136,31 +145,31 @@ app.delete('/nodes/:id', (req, res) => {
 
       res.json({
         success: true,
-        message: `Nodo ${nodeId} eliminado del anillo`
+        message: `Nodo ${nodeId} eliminado del anillo`,
       });
     } else {
       res.status(404).json({
         success: false,
-        error: 'Nodo no encontrado'
+        error: "Nodo no encontrado",
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al eliminar nodo'
+      error: "Error al eliminar nodo",
     });
   }
 });
 
 // POST /data - Almacenar un dato
-app.post('/data', (req, res) => {
+app.post("/data", (req, res) => {
   try {
     const { key, value } = req.body;
 
     if (!key || !value) {
       return res.status(400).json({
         success: false,
-        error: 'Se requieren key y value'
+        error: "Se requieren key y value",
       });
     }
 
@@ -169,7 +178,7 @@ app.post('/data', (req, res) => {
     if (nodes.length === 0) {
       return res.status(500).json({
         success: false,
-        error: 'No hay nodos disponibles'
+        error: "No hay nodos disponibles",
       });
     }
 
@@ -182,32 +191,46 @@ app.post('/data', (req, res) => {
       key,
       keyId,
       responsibleNode: responsibleNode.id,
-      message: `Dato almacenado en el nodo ${responsibleNode.id}`
+      message: `Dato almacenado en el nodo ${responsibleNode.id}`,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al almacenar dato'
+      error: "Error al almacenar dato",
     });
   }
 });
 
 // GET /data/:key - Buscar un dato
-app.get('/data/:key', (req, res) => {
+app.get("/data/:key", (req, res) => {
   try {
     const key = req.params.key;
     const keyId = hashKey(key);
+    const nodeId = req.query.nodeId ? parseInt(req.query.nodeId as string) : null;
 
     if (nodes.length === 0) {
       return res.status(500).json({
         success: false,
-        error: 'No hay nodos disponibles'
+        error: "No hay nodos disponibles",
       });
     }
 
-    // Buscar desde un nodo aleatorio
-    const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-    const targetNode = randomNode.findSuccessor(keyId);
+    // Buscar desde el nodo especificado o uno aleatorio
+    let startingNode;
+    if (nodeId !== null) {
+      startingNode = nodes.find(n => n.id === nodeId);
+      if (!startingNode) {
+        return res.status(400).json({
+          success: false,
+          error: `Nodo ${nodeId} no encontrado`,
+        });
+      }
+    } else {
+      startingNode = nodes[Math.floor(Math.random() * nodes.length)];
+    }
+
+    const caminoDeBusqueda: any[] = [];
+    const targetNode = startingNode.findSuccessor(keyId, caminoDeBusqueda);
     const foundData = targetNode.data.get(keyId);
 
     if (foundData !== undefined) {
@@ -216,20 +239,22 @@ app.get('/data/:key', (req, res) => {
         key,
         keyId,
         value: foundData,
-        foundInNode: targetNode.id
+        foundInNode: targetNode.id,
+        caminoDeBusqueda: [...caminoDeBusqueda, targetNode.id],
       });
     } else {
       res.status(404).json({
         success: false,
         key,
         keyId,
-        error: 'Dato no encontrado'
+        error: "Dato no encontrado",
+        caminoDeBusqueda,
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al buscar dato'
+      error: "Error al buscar dato",
     });
   }
 });
@@ -237,7 +262,9 @@ app.get('/data/:key', (req, res) => {
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`API de Chord corriendo en puerto ${PORT}`);
-  console.log(`Espacio de identificadores: 2^${M} = ${simulator.identifierSpaceSize}`);
+  console.log(
+    `Espacio de identificadores: 2^${M} = ${simulator.identifierSpaceSize}`
+  );
   console.log(`Nodos iniciales: ${NUM_INITIAL_NODES}`);
 });
 
